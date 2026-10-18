@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alpha Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f6;--card:#fff;--ink:#14213d;--mute:#5d6b85;--line:#d9dfea;--brand:#2b4cff;--ok:#0e8f5b;--warn:#b57a00;--bad:#c23b3b;--okbg:#e1f4ea;--warnbg:#fff1d0;--badbg:#fbe4e4;--brandbg:#e5eaff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1424;--card:#171f35;--ink:#e8ecf7;--mute:#98a4c0;--line:#2a3452;--brand:#7d93ff;--ok:#4cd39a;--warn:#f0b840;--bad:#ff8585;--okbg:#12332a;--warnbg:#3a2f10;--badbg:#3b1b1f;--brandbg:#1f2a52}}
+:root[data-theme="dark"]{--bg:#0e1424;--card:#171f35;--ink:#e8ecf7;--mute:#98a4c0;--line:#2a3452;--brand:#7d93ff;--ok:#4cd39a;--warn:#f0b840;--bad:#ff8585;--okbg:#12332a;--warnbg:#3a2f10;--badbg:#3b1b1f;--brandbg:#1f2a52}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Figtree,system-ui,sans-serif}
+h1,h2,h3{font-family:'Bricolage Grotesque',Figtree,sans-serif;margin:0}
+.wrap{max-width:600px;margin:0 auto;padding:16px 16px 90px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.logo{font:800 24px 'Bricolage Grotesque',sans-serif;letter-spacing:-.5px}.logo i{font-style:normal;color:var(--brand)}
+.tag{color:var(--mute);font-size:13px}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px;margin-bottom:12px}
+.seg{overflow-x:auto}.seg button{flex:1 0 auto;white-space:nowrap;border:0;background:none;color:var(--mute);font:600 14px Figtree;padding:8px 10px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.card.tap{cursor:pointer}
+label{display:block;font-weight:600;font-size:14px;margin:12px 0 5px}
+input[type=text],input[type=number],input[type=date],select{width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:16px Figtree}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+.btn{border:0;border-radius:12px;padding:14px;font:700 16px Figtree;cursor:pointer;background:var(--brand);color:#fff;width:100%}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.sm{padding:9px 10px;font-size:14px;border-radius:9px}
+.btn.ok{background:var(--ok)}.btn.bad{background:var(--bad)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:99px}
+.p-pending{background:var(--warnbg);color:var(--warn)}.p-approved{background:var(--okbg);color:var(--ok)}.p-rejected,.p-flag{background:var(--badbg);color:var(--bad)}.p-clarify{background:var(--brandbg);color:var(--brand)}
+.lvl{display:flex;gap:3px;align-items:center;font-size:12px;color:var(--mute)}.lvl b{width:14px;height:6px;border-radius:3px;background:var(--line)}.lvl b.f{background:var(--brand)}
+.item{display:flex;justify-content:space-between;gap:10px}
+.a{font:700 19px 'Bricolage Grotesque';white-space:nowrap}
+.meta{color:var(--mute);font-size:13px}.mono{font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.stat.on{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.stat b{display:block;font:800 24px 'Bricolage Grotesque'}.stat span{font-size:12px;color:var(--mute)}
+.big{background:var(--ink);color:var(--bg);border-radius:14px;padding:16px;margin-bottom:12px}
+.big b{font:800 32px 'Bricolage Grotesque';display:block}.big span{opacity:.75;font-size:13px}
+.flags{margin:8px 0 0;padding:0;list-style:none}.flags li{background:var(--badbg);color:var(--bad);border-radius:8px;padding:6px 9px;font-size:13px;margin-top:5px}
+.acts{display:flex;gap:6px;margin-top:10px}.acts .btn{flex:1}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;z-index:9}
+.toast.on{opacity:1}
+.hint{font-size:13px;color:var(--mute);margin:6px 0 0}.empty{text-align:center;color:var(--mute);padding:26px 10px}
+.upl{display:flex;gap:8px}.upl .btn{flex:1}
+.prev{margin-top:10px;position:relative}.prev img{max-width:100%;max-height:200px;border-radius:10px;display:block}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}.tbl td,.tbl th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}.tbl .n{text-align:right;white-space:nowrap}.tbl th{color:var(--mute);font-weight:600;font-size:12px}
+.tl{margin:0;padding:0 0 0 14px;list-style:none;border-left:2px solid var(--line)}.tl li{position:relative;padding:0 0 12px 12px}.tl li:before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+.hash{font:12px ui-monospace,Menlo,monospace;color:var(--mute)}
+.ln{display:grid;grid-template-columns:1fr 54px 92px 28px;gap:6px;margin-bottom:6px}.ln input{padding:9px}
+.x{border:0;background:none;color:var(--bad);font-size:20px;cursor:pointer}
+.back{border:0;background:none;color:var(--brand);font:600 15px Figtree;cursor:pointer;padding:4px 0 10px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px}.chk input{margin-top:4px;width:18px;height:18px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div class="wrap">
+<header><div><div class="logo">Alpha <i>Tracker</i></div><div class="tag">Proof for every payment. Control for every shelf.</div></div></header>
+<div class="seg"><button id="tE" onclick="go('e')">Employee</button><button id="tO" onclick="go('o')">Owner</button><button id="tL" onclick="go('l')">Ledger</button><button id="tA" onclick="go('a')">Audit</button><button id="tS" onclick="go('s')">Stock</button><button id="tV" onclick="go('v')">Vendor</button></div>
+<main id="app"></main>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<input id="f1" type="file" accept="image/*" capture="environment" style="position:absolute;left:-9999px" onchange="pick(this)">
+<input id="f2" type="file" accept="image/*,application/pdf" style="position:absolute;left:-9999px" onchange="pick(this)">
+<script>
+const CATS={'Transportation':['6100','Transport expense'],'Materials':['5100','Materials purchased'],'Casual labour':['6200','Casual labour expense'],'Meals':['6300','Meals and entertainment'],'Vehicle maintenance':['6400','Vehicle repairs'],'Other':['6900','Sundry expense']};
+const CASH=['1010','Cash on hand'],PAY=['2100','Employee reimbursements payable'];
+const NOREC=['Transporter does not issue receipts','Casual labour','Market purchase','Emergency expense','Other'];
+let ME='Staff';const OWNER='Owner';
+const N=v=>'₦'+Number(v).toLocaleString('en-NG');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago=m=>Date.now()-m*60000;
+const fmt=t=>new Date(t).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const rel=t=>{const m=Math.round((Date.now()-t)/60000);return m<60?m+' min ago':m<1440?Math.round(m/60)+' hr ago':Math.round(m/1440)+' d ago'};
+const hsh=s=>{let x=5381;for(const c of s)x=((x<<5)+x+c.charCodeAt(0))>>>0;return x.toString(16).padStart(8,'0')};
+const total=x=>x.lines.reduce((s,l)=>s+l.q*l.p,0);
+let S={tab:'e',view:'list',sel:null,filter:'all',items:[],je:[],next:1,jn:1};
+let F=null;
+function ev(x,who,what,t){const p=x.log.length?x.log[x.log.length-1].h:'0';t=t||Date.now();x.log.push({t,who,what,h:hsh(p+who+what+t)})}
+function post(x,t){const cr=x.src==='Personal'?PAY:CASH,no='JE-'+String(S.jn++).padStart(4,'0');
+ const l=x.lines.map(z=>({acc:CATS[x.cat][0],name:CATS[x.cat][1],dr:z.q*z.p,cr:0,memo:z.d}));l.push({acc:cr[0],name:cr[1],dr:0,cr:total(x),memo:x.src==='Personal'?'Owed to '+x.emp:'Cash paid out'});
+ S.je.push({no,t,xid:x.id,lines:l});x.je=no;ev(x,'System','Posted '+no+': Dr '+CATS[x.cat][1]+', Cr '+cr[1]+' '+N(total(x)),t)}
+function seed(){const D=[
+['John','Transportation','Delivery to Kaduna depot','Roadside driver','Personal',[['Transport fare',1,45000]],35,'pending',0,'Transporter does not issue receipts'],
+['John','Transportation','Supplier pickup','Roadside driver','Personal',[['Transport fare',1,38000]],1200,'pending',0,'Transporter does not issue receipts'],
+['John','Transportation','Return trip','Roadside driver','Personal',[['Transport fare',1,41000]],1800,'pending',0,'Transporter does not issue receipts'],
+['David','Transportation','Delivery to Wuse','Musa Transport','Company cash',[['Haulage to Wuse',1,10000],['Loading fee',1,2500]],300,'approved',1],
+['Paul','Vehicle maintenance','Hilux service','ABC Motors','Company cash',[['Brake pads',2,6500],['Labour',1,5500]],420,'approved',1],
+['David','Transportation','Goods to Garki market','Tricycle rider','Company cash',[['Tricycle hire',2,4000]],1560,'approved',1],
+['Amaka','Meals','Team lunch, site visit','Mama Put Kitchen','Personal',[['Jollof rice and chicken',8,2500],['Drinks',8,250]],540,'pending',1],
+['Paul','Transportation','Fuel top-up','Filling station','Company cash',[['Petrol (litres)',12,650]],3000,'approved',1],
+['Paul','Transportation','Courier to Lugbe','Dispatch rider','Company cash',[['Courier fee',1,14600]],180,'pending',1],['Paul','Transportation','Abuja to Lagos','Peace Mass Transit','Company cash',[['Bus fare',1,1500]],2880,'approved',1],['John','Transportation','Abuja to Lagos','Peace Mass Transit','Personal',[['Bus fare',1,4000]],90,'pending',1]];
+ D.forEach(d=>{const x={id:S.next++,emp:d[0],cat:d[1],purpose:d[2],to:d[3],src:d[4],lines:d[5].map(l=>({d:l[0],q:l[1],p:l[2]})),photo:!!d[8],noRec:!d[8],why:d[9],loc:'Abuja',t:ago(d[6]),status:d[7],log:[]};
+  ev(x,x.emp,'Submitted '+N(total(x)),x.t);if(x.photo)ev(x,x.emp,'Receipt photo attached',x.t+1000);else ev(x,x.emp,'No receipt: '+x.why,x.t+1000);ev(x,x.emp,'Signed business-purpose declaration',x.t+2000);
+  if(x.status==='approved'){ev(x,OWNER,'Approved',x.t+600000);post(x,x.t+601000)}if(x.purpose==='Abuja to Lagos'){x.rf='Abuja';x.rt='Lagos'}if(x.photo)x.gps=true;if(x.status==='pending'){x.cpr='CF-'+(4000+S.next*13);ev(x,'System','Confirmation request sent to '+x.to+' ('+x.cpr+')',x.t+3000)}if(x.to==='ABC Motors'||x.to==='Musa Transport'){x.ext={amt:total(x),sup:x.to,match:true};x.cp={by:x.to,method:'Link',t:x.t+3600000};ev(x,'AI','Read receipt: '+N(total(x))+' from '+x.to+' (matches claim)',x.t+3000);ev(x,x.to,'Confirmed receiving '+N(total(x))+' by Link',x.t+3600000)}if(x.to==='Musa Transport'){x.bank='BANK-4471AB';ev(x,'System','Matched bank record: '+N(total(x)),x.t+7200000)}S.items.push(x)})}
+S.inv=[];S.wo=[];S.sl=[];S.sales=[];S.sub='ov';S.dp=30;S.gp=0;
+S.tab=S.tab||'e';
+let DB=null,OWN=true,wq=Promise.resolve();
+const save=()=>{if(!DB)return toast('Not connected, so this change is not saved');const d=Object.assign({},S);['tab','view','sel','filter','sub','vn','rg'].forEach(k=>delete d[k]);const js=JSON.stringify(d);wq=wq.then(()=>DB.doc('app/state').set({d:js})).catch(e=>toast('Could not save: '+(e.message||e.code)))};
+const toast=m=>{const t=document.getElementById('toast');t.textContent=m;t.className='toast on';setTimeout(()=>t.className='toast',2400)};
+const level=x=>1+(x.photo?1:0)+(x.ext&&x.ext.match?1:0)+(x.gps?1:0)+(x.cp?1:0)+(x.bank?1:0);
+function flags(x){const f=[];
+ if(!x.photo)f.push('No supporting document');if(x.ext&&!x.ext.match)f.push('Receipt shows '+N(x.ext.amt)+' but the claim is '+N(total(x)));
+ const pr=S.items.filter(y=>y.emp===x.emp&&y.cat===x.cat&&y.id!==x.id&&y.t<x.t&&y.status!=='rejected');
+ if(pr.length>=2){const a=pr.reduce((s,y)=>s+total(y),0)/pr.length;if(total(x)>a*1.5)f.push('Much higher than '+x.emp+"'s usual "+x.cat.toLowerCase()+' claims (avg '+N(Math.round(a))+')')}
+ const sim=S.items.filter(y=>y.emp===x.emp&&y.cat===x.cat&&Math.abs(y.t-x.t)<172800000);if(sim.length>=3)f.push(sim.length+' similar claims within 2 days');
+ if(x.src==='Personal'&&total(x)>=20000&&!x.photo)f.push('Large personal payment with no photo');
+ const q=S.items.filter(y=>y.emp===x.emp&&y.cat===x.cat&&Math.abs(y.t-x.t)<20*60000);if(q.length>=3)f.push(q.length+' similar claims within 20 minutes');
+ const vf=S.items.filter(y=>y.to===x.to&&y.status!=='rejected'&&Math.abs(y.t-x.t)<3*864e5);if(vf.length>=3)f.push(x.to+' has received unusually frequent payments ('+vf.length+' in 3 days)');
+ const hr=new Date(x.t).getHours();if(hr>=21||hr<6||new Date(x.t).getDay()===0)f.push('Submitted outside normal work pattern ('+new Date(x.t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+')');
+ bm(x).forEach(m=>f.push(m));if(x.cpd)f.push(x.cpd.amt?'Vendor says it received '+N(x.cpd.amt)+' but the claim is '+N(total(x)):'Vendor says it did not receive this payment');
+ return f}
+const flagged=x=>x.status==='pending'&&flags(x).length>0;
+function go(t){S.tab=t;S.view='list';S.filter='all';render()}
+function lv(n){return '<span class="lvl">'+[1,2,3,4,5,6].map(i=>'<b class="'+(i<=n?'f':'')+'"></b>').join('')+'&nbsp;Evidence '+n+'/6</span>'}
+function pill(x){return flagged(x)?'<span class="pill p-flag">Flagged</span>':'<span class="pill p-'+x.status+'">'+({pending:'Pending',approved:'Approved',rejected:'Rejected',clarify:'Question open'})[x.status]+'</span>'}
+function card(x,own){return '<div class="card tap" onclick="open_('+x.id+')"><div class="item"><div><b>'+esc(x.cat)+'</b> · '+esc(x.purpose)+'<div class="meta">'+(own?esc(x.emp)+' · ':'')+'Paid to '+esc(x.to)+' · '+x.lines.length+' line'+(x.lines.length>1?'s':'')+'</div><div class="meta">'+rel(x.t)+' · '+esc(x.loc)+'</div></div><div class="a">'+N(total(x))+'</div></div><div class="item" style="margin-top:8px;align-items:center">'+lv(level(x))+pill(x)+'</div></div>'}
+function open_(id){S.sel=id;S.view='detail';render();scrollTo(0,0)}
+function act(id,s){const x=S.items.find(i=>i.id===id);x.status=s;
+ if(s==='approved'){ev(x,OWNER,'Approved');post(x)}else if(s==='rejected')ev(x,OWNER,'Rejected');else ev(x,OWNER,'Asked '+x.emp+' to explain this expense');
+ save();toast(({approved:'Approved and posted '+x.je,rejected:'Expense rejected',clarify:'Question sent to '+x.emp})[s]);render()}
+function reply(id){const x=S.items.find(i=>i.id===id),r=document.getElementById('rp').value.trim();if(!r)return toast('Type your reply first');ev(x,x.emp,'Replied: '+r);x.status='pending';save();toast('Reply sent');render()}
+function detail(){const x=S.items.find(i=>i.id===S.sel),own=S.tab==='o',f=flags(x),je=S.je.find(j=>j.no===x.je);
+ return '<button class="back" onclick="S.view=\'list\';render()">‹ Back</button><div class="card"><div class="item"><div><h2 style="font-size:20px">'+esc(x.cat)+'</h2><div class="meta">'+esc(x.purpose)+'</div></div><div class="a">'+N(total(x))+'</div></div>'
+ +'<div class="meta" style="margin:8px 0">'+esc(x.emp)+' · paid to '+esc(x.to)+' · '+esc(x.src)+' · '+fmt(x.t)+' · '+esc(x.loc)+'</div><div class="item" style="align-items:center">'+lv(level(x))+pill(x)+'</div>'
+ +(f.length?'<ul class="flags">'+f.map(m=>'<li>'+esc(m)+'</li>').join('')+'</ul>':'')+'</div>'
+ +'<div class="card"><h3 style="font-size:16px;margin-bottom:6px">Line items</h3><table class="tbl mono"><tr><th>Item</th><th class="n">Qty</th><th class="n">Price</th><th class="n">Amount</th></tr>'+x.lines.map(l=>'<tr><td>'+esc(l.d)+'</td><td class="n">'+l.q+'</td><td class="n">'+N(l.p)+'</td><td class="n">'+N(l.q*l.p)+'</td></tr>').join('')+'<tr><td colspan="3"><b>Total</b></td><td class="n"><b>'+N(total(x))+'</b></td></tr></table></div>'
+ +ladder(x)+hcard(x)+'<div class="card"><h3 style="font-size:16px;margin-bottom:6px">Document</h3>'+(x.img?'<div id="im" class="meta">Loading receipt…</div>':x.photo?'<div class="meta">Receipt photo on file (sample record, no image stored).</div>':'<div class="meta">No receipt. Reason: '+esc(x.why||'declared')+'.</div>')+'</div>'
+ +'<div class="card"><h3 style="font-size:16px;margin-bottom:6px">Accounting posting</h3>'+(je?jeHtml(je):'<div class="meta">Nothing posted yet. The entry is created when the owner approves.</div>')+'</div>'
+ +'<div class="card"><h3 style="font-size:16px;margin-bottom:10px">Audit trail</h3><ul class="tl">'+x.log.map(e=>'<li><b>'+esc(e.what)+'</b><div class="meta">'+esc(e.who)+' · '+fmt(e.t)+'</div><div class="hash">#'+e.h+'</div></li>').join('')+'</ul></div>'
+ +(own&&OWN&&(x.status==='pending'||x.status==='clarify')?'<div class="acts"><button class="btn sm ok" onclick="act('+x.id+',\'approved\')">Approve and post</button><button class="btn sm ghost" onclick="act('+x.id+',\'clarify\')">Ask why</button><button class="btn sm bad" onclick="act('+x.id+',\'rejected\')">Reject</button></div>':'')
+ +(!own&&S.tab==='e'&&x.status==='clarify'?'<div class="card"><label for="rp" style="margin-top:0">Reply to the owner</label><input type="text" id="rp" placeholder="Explain this expense"><button class="btn" style="margin-top:10px" onclick="reply('+x.id+')">Send reply</button></div>':'')}
+function jeHtml(j){return '<div class="meta" style="margin-bottom:4px"><b style="color:var(--ink)">'+j.no+'</b> · '+fmt(j.t)+'</div><table class="tbl mono"><tr><th>Account</th><th class="n">Debit</th><th class="n">Credit</th></tr>'+j.lines.map(l=>'<tr><td>'+(l.cr?'&nbsp;&nbsp;&nbsp;':'')+l.acc+' '+esc(l.name)+(l.memo?'<div class="meta">'+esc(l.memo)+'</div>':'')+'</td><td class="n">'+(l.dr?N(l.dr):'')+'</td><td class="n">'+(l.cr?N(l.cr):'')+'</td></tr>').join('')+'</table>'}
+function ledger(){const tb={};S.je.forEach(j=>j.lines.forEach(l=>{const k=l.acc+' '+l.name;tb[k]=tb[k]||[0,0];tb[k][0]+=l.dr;tb[k][1]+=l.cr}));
+ const ks=Object.keys(tb).sort(),dr=ks.reduce((s,k)=>s+tb[k][0],0),cr=ks.reduce((s,k)=>s+tb[k][1],0);
+ return '<div class="card"><h3 style="margin-bottom:6px">Trial balance</h3><table class="tbl mono"><tr><th>Account</th><th class="n">Debit</th><th class="n">Credit</th></tr>'+ks.map(k=>'<tr><td>'+esc(k)+'</td><td class="n">'+(tb[k][0]?N(tb[k][0]):'')+'</td><td class="n">'+(tb[k][1]?N(tb[k][1]):'')+'</td></tr>').join('')+'<tr><td><b>Total</b></td><td class="n"><b>'+N(dr)+'</b></td><td class="n"><b>'+N(cr)+'</b></td></tr></table><p class="hint">'+(dr===cr?'Debits equal credits.':'Out of balance.')+' Only approved expenses are posted.</p></div>'
+ +bankCard()+'<h3 style="margin:14px 0 8px">Journal entries</h3>'+(S.je.slice().reverse().map(j=>'<div class="card tap" onclick="open_('+j.xid+')">'+jeHtml(j)+'</div>').join('')||'<div class="empty">No entries yet. Approve an expense to post one.</div>')}
+function audit(){const all=[];S.items.forEach(x=>x.log.forEach(e=>all.push(Object.assign({x},e))));(S.sl||[]).forEach(e=>all.push(Object.assign({x:{id:0,cat:'Stock write-off',lines:[{q:1,p:e.amt}]}},e)));all.sort((a,b)=>b.t-a.t);
+ return '<div class="card"><div class="item" style="align-items:center"><div><b>Audit log</b><div class="meta">'+all.length+' events across '+S.items.length+' expenses. Each event is chained to the one before it.</div></div><button class="btn sm" style="width:auto" onclick="verify()">Verify</button></div><div id="vr"></div></div>'
+ +all.slice(0,60).map(e=>'<div class="card tap" onclick="open_('+e.x.id+')"><b>'+esc(e.what)+'</b><div class="meta">'+esc(e.who)+' · '+esc(e.x.cat)+' '+N(total(e.x))+' · '+fmt(e.t)+'</div><div class="hash">#'+e.h+'</div></div>').join('')}
+function verify(){let bad=0;{let p='0';(S.sl||[]).forEach(e=>{if(hsh(p+e.who+e.what+e.t)!==e.h)bad++;p=e.h})}S.items.forEach(x=>{let p='0';x.log.forEach(e=>{if(hsh(p+e.who+e.what+e.t)!==e.h)bad++;p=e.h})});
+ document.getElementById('vr').innerHTML='<div class="flags"><li style="'+(bad?'':'background:var(--okbg);color:var(--ok)')+'">'+(bad?bad+' events fail the check. Records may have been altered.':'All events check out. No record has been altered.')+'</li></div>'}
+function dash(){const it=rng(),tot=it.filter(x=>x.status!=='rejected').reduce((s,x)=>s+total(x),0),
+ pend=it.filter(x=>x.status==='pending'||x.status==='clarify').length,appr=it.filter(x=>x.status==='approved').length,fl=it.filter(flagged).length,sh=it.filter(x=>S.filter==='all'||(S.filter==='flag'&&flagged(x))||(S.filter==='pending'&&(x.status==='pending'||x.status==='clarify'))||(S.filter==='approved'&&x.status==='approved')).sort((p,q)=>q.t-p.t);
+ const b=(k,n,l,c)=>'<button class="stat '+(S.filter===k?'on':'')+'" onclick="S.filter=\''+(S.filter===k?'all':k)+'\';render()"><b'+(c?' style="color:var(--bad)"':'')+'>'+n+'</b><span>'+l+'</span></button>';
+ return '<div class="big"><span>'+({d:"Today's expenses",w:'Last 7 days',a:'All expenses'})[S.rg||'d']+' · '+it.length+' claims (excluding rejected in total)</span><b>'+N(tot)+'</b></div>'+catPanel(it)+'<div class="stats">'+b('pending',pend,'Pending')+b('approved',appr,'Verified / approved')+b('flag',fl,'Flagged',1)+'</div>'+evPanel()+'<p class="hint" style="margin:0 0 8px">Flags point out unusual patterns. You decide what to do.</p>'+(sh.map(x=>card(x,1)).join('')||'<div class="empty">Nothing here.</div>')+(OWN?'<button class="btn ghost sm" style="margin-top:14px" onclick="clr()">Erase all data</button>':'')}
+function empList(){const m=S.items.filter(x=>x.emp===ME).sort((p,q)=>q.t-p.t);return '<button class="btn" onclick="newX()">＋ New expense</button><h3 style="margin:18px 0 8px">My expenses</h3>'+(m.map(x=>card(x,0)).join('')||'<div class="empty">No expenses yet.</div>')}
+function newX(){F={cat:'Transportation',to:'',pur:'',src:'Company cash',loc:'Abuja',noRec:false,why:NOREC[0],img:null,lines:[{d:'',q:1,p:''}],dec:false};S.view='new';render()}
+function ftot(){return F.lines.reduce((s,l)=>s+(+l.q||0)*(+l.p||0),0)}
+function upd(){const e=document.getElementById('ft');if(e)e.textContent=N(ftot())}
+function form(){const I=(k,ph)=>'<input type="text" value="'+esc(F[k])+'" placeholder="'+ph+'" oninput="F.'+k+'=this.value">';
+ return '<button class="back" onclick="S.view=\'list\';render()">‹ Cancel</button><div class="card"><h2 style="font-size:20px">New expense</h2>'
+ +'<label>Category</label><select onchange="F.cat=this.value;render()">'+Object.keys(CATS).map(c=>'<option'+(c===F.cat?' selected':'')+'>'+c+'</option>').join('')+'</select>'
+ +'<label>What was it for?</label>'+I('pur','e.g. Delivery to Wuse')+(F.cat==='Transportation'?'<div class="row"><div><label>From</label>'+I('rf','e.g. Abuja')+'</div><div><label>To</label>'+I('rt','e.g. Lagos')+'</div></div>':'')+'<label>Who was paid?</label>'+I('to','e.g. Musa Transport')
+ +'<label>Paid from</label><select onchange="F.src=this.value"><option'+(F.src==='Company cash'?' selected':'')+'>Company cash</option><option'+(F.src==='Personal'?' selected':'')+'>Personal</option></select>'
+ +'<label>Line items</label>'+F.lines.map((l,i)=>'<div class="ln"><input type="text" placeholder="Item" value="'+esc(l.d)+'" oninput="F.lines['+i+'].d=this.value"><input type="number" inputmode="decimal" placeholder="Qty" value="'+l.q+'" oninput="F.lines['+i+'].q=this.value;upd()"><input type="number" inputmode="decimal" placeholder="Price" value="'+l.p+'" oninput="F.lines['+i+'].p=this.value;upd()"><button class="x" aria-label="Remove line" onclick="F.lines.length>1?(F.lines.splice('+i+',1),render()):0">×</button></div>').join('')
+ +'<button class="btn ghost sm" onclick="F.lines.push({d:\'\',q:1,p:\'\'});render()">＋ Add line</button><div class="item" style="margin-top:10px"><b>Total</b><b class="a" id="ft">'+N(ftot())+'</b></div>'
+ +'<label>Receipt or evidence</label><div class="upl"><button class="btn ghost sm" onclick="f1.click()">📷 Take photo</button><button class="btn ghost sm" onclick="f2.click()">📁 Upload file</button></div>'
+ +(F.img?'<div class="prev"><img src="'+F.img+'" alt="Receipt preview"><button class="btn ghost sm" style="margin-top:8px" onclick="F.img=null;render()">Remove</button></div>':F.pdf?'<div class="hint">Attached: '+esc(F.pdf)+'</div>':'')
+ +'<label class="chk"><input type="checkbox" '+(F.noRec?'checked':'')+' onchange="F.noRec=this.checked;render()">No receipt available</label>'
+ +(F.noRec?'<label>Why is there no receipt?</label><select onchange="F.why=this.value">'+NOREC.map(c=>'<option'+(c===F.why?' selected':'')+'>'+c+'</option>').join('')+'</select>':'')
+ +'<label>Location</label><div class="row">'+I('loc','City or area')+'<button class="btn ghost sm" style="flex:0 0 auto" onclick="gps()">📍 Use mine</button></div>'
+ +'<label class="chk" style="margin-top:16px"><input type="checkbox" '+(F.dec?'checked':'')+' onchange="F.dec=this.checked">I confirm this expense was incurred for business purposes and the details are true.</label>'
+ +'<button class="btn" style="margin-top:16px" onclick="submitX()">Submit expense</button></div>'}
+function pick(i){const f=i.files[0];i.value='';if(!f)return;
+ if(f.type==='application/pdf'){F.pdf=f.name;F.img=null;F.noRec=false;F.hasDoc=true;return render()}
+ const r=new FileReader();r.onerror=()=>toast('Could not read that file');r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);F.img=c.toDataURL('image/jpeg',.7);F.noRec=false;render()};im.onerror=()=>toast('That file is not a readable image');im.src=r.result};r.readAsDataURL(f)}
+function gps(){if(!navigator.geolocation)return toast('Location not available');navigator.geolocation.getCurrentPosition(p=>{F.loc=p.coords.latitude.toFixed(3)+', '+p.coords.longitude.toFixed(3);F.gps=true;render()},()=>toast('Could not get location. Type it instead.'))}
+function submitX(){const ls=F.lines.filter(l=>l.d.trim()||+l.p).map(l=>({d:l.d.trim()||'Item',q:+l.q||1,p:+l.p||0}));
+ if(!F.pur.trim())return toast('Say what it was for');if(!F.to.trim())return toast('Say who was paid');if(!ls.length||ls.some(l=>l.p<=0))return toast('Give every line a price');
+ if(!F.img&&!F.hasDoc&&!F.noRec)return toast('Add a receipt or tick No receipt available');if(!F.dec)return toast('Confirm the declaration to submit');
+ const x={id:Date.now(),emp:ME,cat:F.cat,purpose:F.pur.trim(),to:F.to.trim(),src:F.src,lines:ls,photo:!!(F.img||F.hasDoc),img:!!F.img,noRec:F.noRec,why:F.noRec?F.why:undefined,rf:F.cat==='Transportation'?(F.rf||'').trim():'',rt:F.cat==='Transportation'?(F.rt||'').trim():'',loc:F.loc||'Unknown',gps:!!F.gps,t:Date.now(),status:'pending',log:[]};
+ ev(x,ME,'Submitted '+N(total(x))+' ('+ls.length+' line'+(ls.length>1?'s':'')+')');ev(x,ME,F.img?'Receipt photo attached':F.hasDoc?'Document attached: '+F.pdf:'No receipt: '+x.why);ev(x,ME,'Signed business-purpose declaration');if(x.loc!=='Unknown')ev(x,'System','Location recorded: '+x.loc);
+ x.cpr='CF-'+Math.floor(1000+Math.random()*9000);ev(x,'System','Confirmation request sent to '+x.to+' ('+x.cpr+')');S.items.push(x);save();if(F.img&&DB)DB.doc('img/'+x.id).set({d:F.img}).catch(()=>toast('Receipt image could not be saved'));S.view='list';toast(bm(x).length?'Submitted. It is higher than other claims for the same trip or item, so the owner will review it.':'Expense submitted for approval');render()}
+function render(){document.querySelectorAll('.seg button').forEach(b=>b.className='');document.getElementById({e:'tE',o:'tO',l:'tL',a:'tA',s:'tS',v:'tV'}[S.tab]).className='on';
+ const a=document.getElementById('app');
+ if(S.view==='new'&&F)a.innerHTML=form();else if(S.view==='detail'&&S.items.find(i=>i.id===S.sel)){a.innerHTML=detail();loadImg()}else a.innerHTML=({e:empList,o:dash,l:ledger,a:audit,s:stock,v:vendor})[S.tab]();if(!S.items.length&&!S.inv.length&&S.view==='list'&&(S.tab==='e'||S.tab==='o'||S.tab==='s'))a.innerHTML='<div class="card"><b>Nothing here yet.</b><p class="meta">Add real records, or load sample data to try the app.</p><button class="btn ghost" onclick="demo()">Load sample data</button></div>'+a.innerHTML}
+
+const WO=['6500','Inventory write-off'],INV=['1200','Inventory'],ST=.6;
+const dl=p=>Math.ceil((p.exp-Date.now())/864e5),risk=p=>p.qty>0&&dl(p)<=7;
+function sev(what,amt,t){const l=S.sl,pv=l.length?l[l.length-1].h:'0';t=t||Date.now();l.push({t,who:'Store manager',what,amt,h:hsh(pv+'Store manager'+what+t)})}
+function doWO(p,reason,q,t,keep){const amt=q*p.cost,no='JE-'+String(S.jn++).padStart(4,'0');t=t||Date.now();
+ S.je.push({no,t,xid:null,lines:[{acc:WO[0],name:WO[1],dr:amt,cr:0,memo:reason+': '+q+' x '+p.name},{acc:INV[0],name:INV[1],dr:0,cr:amt,memo:'Stock removed at cost'}]});
+ S.wo.push({t,name:p.name,reason,q,amt,no});sev('Wrote off '+q+' x '+p.name+' ('+reason+') '+N(amt)+', posted '+no,amt,t);if(!keep){p.qty-=q;if(reason==='Damaged')p.dmg=0}}
+function seedInv(){const D=[['Fresh milk 1L','Dairy',48,1100,1500,2,0],['Yoghurt cups','Dairy',60,350,500,4,0],['Bread loaf','Bakery',40,700,1000,-1,0],['Eggs crate','Fresh',25,2600,3200,6,0],['Frozen chicken 1kg','Frozen',30,4200,5200,9,0],['Orange juice 1L','Drinks',36,900,1300,15,6],['Tomato paste','Pantry',120,250,380,45,0],['Rice 5kg','Pantry',40,7200,8500,200,0],['Cooking oil 1L','Pantry',55,2100,2600,20,0],['Biscuit packs','Snacks',90,180,300,3,0],['Instant noodles','Pantry',200,140,220,120,0],['Canned sardines','Pantry',25,800,1100,-5,0]];
+ S.inv=D.map((d,i)=>({id:i+1,name:d[0],cat:d[1],qty:d[2],cost:d[3],price:d[4],exp:Date.now()+d[5]*864e5,dmg:d[6]}));S.wo=[];S.sl=[];S.sub='ov';S.dp=30;S.gp=1200000;
+ [['Yoghurt cups','Expired',14,22*1440,350],['Fresh milk 1L','Expired',10,15*1440,1100],['Bread loaf','Unsold',18,9*1440,700],['Orange juice 1L','Damaged',8,5*1440,900]].forEach(w=>doWO({name:w[0],cost:w[4]},w[1],w[2],ago(w[3]),1))}
+const bd=p=>{const d=dl(p);return d<0?['Expired '+(-d)+'d ago','p-flag']:d<=3?[d+'d left','p-flag']:d<=7?[d+'d left','p-pending']:d<=14?[d+'d left','p-clarify']:[d+'d left','p-approved']};
+const val=a=>a.reduce((s,p)=>s+p.qty*p.cost,0);
+function disc(id){const p=S.inv.find(i=>i.id===id),o=p.price;p.price=Math.round(p.price*(1-S.dp/100));sev('Marked down '+p.name+' '+S.dp+'% ('+N(o)+' to '+N(p.price)+')',0);save();toast('Price reduced to '+N(p.price));render()}
+function wo(id,r){const p=S.inv.find(i=>i.id===id),q=r==='Damaged'?p.dmg:p.qty;doWO(p,r,q);save();toast('Written off '+N(q*p.cost)+' and posted to the ledger');render()}
+function sub(k){S.sub=k;render()}
+function stock(){const a=S.inv.filter(p=>p.qty>0),rk=a.filter(risk),ex=a.filter(p=>dl(p)<0),lost=S.wo.reduce((s,w)=>s+w.amt,0),
+ nav='<div class="seg">'+[['ov','Overview'],['al','Alerts ('+(rk.length+S.inv.filter(p=>p.dmg>0).length)+')'],['rs','Receive / sell'],['ct','Stock take'],['rp','Monthly report']].map(k=>'<button class="'+(S.sub===k[0]?'on':'')+'" onclick="sub(\''+k[0]+'\')">'+k[1]+'</button>').join('')+'</div>';
+ if(S.sub==='rs')return nav+recv();if(S.sub==='ct')return nav+count();
+ if(S.sub==='ov')return nav+'<div class="big"><span>Stock on hand (at cost)</span><b>'+N(val(a))+'</b></div><div class="stats"><div class="stat"><b style="color:var(--warn)">'+N(val(rk))+'</b><span>Expiring within 7 days</span></div><div class="stat"><b style="color:var(--bad)">'+N(val(ex))+'</b><span>Already expired</span></div><div class="stat"><b>'+N(lost)+'</b><span>Written off this month</span></div></div>'
+ +'<div class="card"><table class="tbl mono"><tr><th>Product</th><th class="n">Qty</th><th class="n">Value</th><th class="n">Expiry</th></tr>'+a.sort((x,y)=>dl(x)-dl(y)).map(p=>{const b=bd(p);return '<tr><td>'+esc(p.name)+'<div class="meta">'+p.cat+' · cost '+N(p.cost)+' · sells '+N(p.price)+'</div></td><td class="n">'+p.qty+'</td><td class="n">'+N(p.qty*p.cost)+'</td><td class="n"><span class="pill '+b[1]+'">'+b[0]+'</span></td></tr>'}).join('')+'</table></div>';
+ if(S.sub==='al'){const dm=S.inv.filter(p=>p.dmg>0),sel='<div class="card"><label style="margin:0 0 5px">Markdown to try before writing off</label><select onchange="S.dp=+this.value;render()">'+[20,30,50].map(v=>'<option value="'+v+'"'+(S.dp===v?' selected':'')+'>'+v+'% off</option>').join('')+'</select><p class="hint">Estimate assumes '+ST*100+'% of the stock sells at the marked-down price.</p></div>';
+  const c=p=>{const d=dl(p),exp=d<0,rev=Math.round(p.qty*p.price*(1-S.dp/100)*ST),b=bd(p);return '<div class="card"><div class="item"><div><b>'+esc(p.name)+'</b><div class="meta">'+p.qty+' units · cost '+N(p.cost)+' each</div></div><span class="pill '+b[1]+'">'+b[0]+'</span></div><table class="tbl mono" style="margin-top:8px"><tr><td>Money tied up (cost)</td><td class="n">'+N(p.qty*p.cost)+'</td></tr><tr><td>Profit lost if it is not sold</td><td class="n">'+N(p.qty*(p.price-p.cost))+'</td></tr>'+(exp?'':'<tr><td>Recovered with '+S.dp+'% off</td><td class="n">'+N(rev)+'</td></tr><tr><td><b>Loss if you mark down</b></td><td class="n"><b>'+N(Math.max(0,p.qty*p.cost-rev))+'</b></td></tr>')+'</table><div class="acts">'+(exp?'':'<button class="btn sm ok" onclick="disc('+p.id+')">Mark down '+S.dp+'%</button>')+'<button class="btn sm bad" onclick="wo('+p.id+',\''+(exp?'Expired':'Unsold')+'\')">Write off</button></div></div>'};
+  return nav+sel+'<h3 style="margin:6px 0 8px">Expired and expiring soon</h3>'+(rk.sort((x,y)=>dl(x)-dl(y)).map(c).join('')||'<div class="empty">Nothing is expiring in the next 7 days.</div>')
+  +(dm.length?'<h3 style="margin:14px 0 8px">Damaged stock</h3>'+dm.map(p=>'<div class="card"><div class="item"><div><b>'+esc(p.name)+'</b><div class="meta">'+p.dmg+' damaged units</div></div><b class="a">'+N(p.dmg*p.cost)+'</b></div><div class="acts"><button class="btn sm bad" onclick="wo('+p.id+',\'Damaged\')">Write off damaged</button></div></div>').join(''):'')}
+ const by={};S.wo.forEach(w=>by[w.reason]=(by[w.reason]||0)+w.amt);const sp=(S.sales||[]).reduce((s,x)=>s+x.p,0),exp=val(rk),gp=((S.gp||0)+sp)||1;
+ return nav+'<div class="card"><h3 style="margin-bottom:8px">Monthly profit impact</h3><label style="margin-top:0">Other gross profit this month (₦, optional)</label><input type="number" inputmode="numeric" value="'+(S.gp||0)+'" onchange="S.gp=+this.value||0;save();render()">'
+ +'<table class="tbl mono" style="margin-top:8px"><tr><td>Profit on recorded sales</td><td class="n">'+N(sp)+'</td></tr><tr><td>Gross profit</td><td class="n">'+N(gp)+'</td></tr>'+Object.keys(by).map(k=>'<tr><td>Less: '+k+' stock</td><td class="n">-'+N(by[k])+'</td></tr>').join('')+'<tr><td><b>Profit after stock losses</b></td><td class="n"><b>'+N(gp-lost)+'</b></td></tr><tr><td>Losses as share of profit</td><td class="n"><b style="color:var(--bad)">'+(lost/gp*100).toFixed(1)+'%</b></td></tr></table></div>'
+ +'<div class="card"><h3 style="margin-bottom:6px">Hidden risk next</h3><p style="margin:0">'+N(exp)+' of stock expires within 7 days. If none of it sells, profit falls by another <b style="color:var(--bad)">'+(exp/gp*100).toFixed(1)+'%</b>.</p></div>'
+ +'<div class="card"><h3 style="margin-bottom:6px">Write-offs this month</h3><table class="tbl mono"><tr><th>Product</th><th>Reason</th><th class="n">Loss</th></tr>'+S.wo.slice().reverse().map(w=>'<tr><td>'+esc(w.name)+'<div class="meta">'+w.q+' units · '+w.no+'</div></td><td>'+w.reason+'</td><td class="n">'+N(w.amt)+'</td></tr>').join('')+'</table><p class="hint">Each write-off posts Dr 6500 Inventory write-off, Cr 1200 Inventory. See the Ledger and Audit tabs.</p></div>'}
+
+function loadImg(){const x=S.items.find(i=>i.id===S.sel);if(x&&x.img===true&&DB)DB.doc('img/'+x.id).get().then(n=>{const e=document.getElementById('im');if(e)e.innerHTML=n.exists?'<img src="'+n.data().d+'" alt="Receipt" style="max-width:100%;border-radius:10px">':'Image not found'}).catch(()=>{})}
+function demo(){seed();seedInv();save();render()}
+function clr(){if(!window._c){window._c=1;toast('Tap again to erase everything');setTimeout(()=>window._c=0,4000);return}S.items=[];S.je=[];S.inv=[];S.wo=[];S.sl=[];S.sales=[];S.jn=1;S.next=1;save();render()}
+function jp(l){const no='JE-'+String(S.jn++).padStart(4,'0');S.je.push({no,t:Date.now(),xid:null,lines:l});return no}
+function recv(){const nm=[...new Set(S.inv.map(p=>p.name))],av=[...new Set(S.inv.filter(p=>p.qty>0).map(p=>p.name))];
+return '<div class="card"><h3 style="margin-bottom:4px">Receive stock</h3><p class="hint" style="margin:0 0 8px">Each delivery is its own batch with its own expiry date.</p><datalist id="dn">'+nm.map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist><label>Product</label><input type="text" id="rn" list="dn" placeholder="e.g. Fresh milk 1L"><div class="row"><div><label>Quantity</label><input type="number" id="rq" inputmode="numeric"></div><div><label>Cost each (₦)</label><input type="number" id="rc" inputmode="decimal"></div></div><div class="row"><div><label>Selling price (₦)</label><input type="number" id="rpz" inputmode="decimal"></div><div><label>Expiry date</label><input type="date" id="re"></div></div><label>Category</label><input type="text" id="rg" placeholder="e.g. Dairy"><button class="btn" style="margin-top:14px" onclick="rcv()">Receive batch</button></div>'
++'<div class="card"><h3 style="margin-bottom:4px">Record a sale</h3><p class="hint" style="margin:0 0 8px">Sells the batch that expires first.</p><label>Product</label><select id="sn">'+av.map(n=>'<option>'+esc(n)+'</option>').join('')+'</select><label>Quantity sold</label><input type="number" id="sq" inputmode="numeric"><button class="btn" style="margin-top:14px" onclick="sell()">Record sale</button></div>'}
+function rcv(){const g=i=>document.getElementById(i).value.trim(),n=g('rn'),q=+g('rq'),c=+g('rc'),pz=+g('rpz'),e=g('re');
+if(!n||q<=0||c<=0||pz<=0||!e)return toast('Fill in product, quantity, cost, price and expiry');
+const ex=S.inv.find(p=>p.name===n);S.inv.push({id:Date.now(),name:n,cat:g('rg')||(ex?ex.cat:'General'),qty:q,cost:c,price:pz,exp:new Date(e+'T23:59:00').getTime(),dmg:0});
+const no=jp([{acc:INV[0],name:INV[1],dr:q*c,cr:0,memo:'Received '+q+' x '+n},{acc:'2000',name:'Accounts payable',dr:0,cr:q*c,memo:'Supplier owed'}]);
+sev('Received '+q+' x '+n+', expiry '+e+' ('+N(q*c)+'), posted '+no,0);save();toast('Batch received and posted '+no);render()}
+function sell(){const n=document.getElementById('sn').value,q=+document.getElementById('sq').value,bs=S.inv.filter(p=>p.name===n&&p.qty>0).sort((a,b)=>a.exp-b.exp);
+if(!n||q<=0)return toast('Choose a product and quantity');if(bs.reduce((s,p)=>s+p.qty,0)<q)return toast('Not enough stock');
+let r=q,rev=0,cg=0;for(const p of bs){const t=Math.min(r,p.qty);p.qty-=t;r-=t;rev+=t*p.price;cg+=t*p.cost;if(!r)break}
+const no=jp([{acc:'1010',name:'Cash on hand',dr:rev,cr:0,memo:'Sold '+q+' x '+n},{acc:'4000',name:'Sales revenue',dr:0,cr:rev},{acc:'5000',name:'Cost of goods sold',dr:cg,cr:0},{acc:INV[0],name:INV[1],dr:0,cr:cg}]);
+S.sales.push({t:Date.now(),name:n,q,rev,p:rev-cg});sev('Sold '+q+' x '+n+' for '+N(rev)+', posted '+no,0);save();toast('Sale recorded: '+N(rev));render()}
+function count(){const a=S.inv.filter(p=>p.qty>0).sort((x,y)=>dl(x)-dl(y));
+return '<div class="card"><h3 style="margin-bottom:4px">Stock take</h3><p class="hint" style="margin:0 0 8px">Count what is on the shelf. Any shortfall is written off as shrinkage.</p><table class="tbl mono"><tr><th>Batch</th><th class="n">System</th><th class="n">Counted</th></tr>'+a.map(p=>'<tr><td>'+esc(p.name)+'<div class="meta">expires '+new Date(p.exp).toLocaleDateString('en-GB')+'</div></td><td class="n">'+p.qty+'</td><td class="n"><input type="number" id="c'+p.id+'" value="'+p.qty+'" style="width:76px;padding:7px"></td></tr>').join('')+'</table><button class="btn" style="margin-top:12px" onclick="applyCt()">Apply count</button></div>'}
+function applyCt(){let n=0;S.inv.filter(p=>p.qty>0).forEach(p=>{const e=document.getElementById('c'+p.id);if(!e)return;const v=+e.value;if(v>=0&&v<p.qty){doWO(p,'Shrinkage',p.qty-v);n++}});save();toast(n?n+' batch(es) had shortfalls and were written off':'Counts match the system');render()}
+OWN=true;
+(function(){let code=sessionStorage.getItem('ac'),ver=0;
+const api=async(m,u,b)=>{const r=await fetch(u,{method:m,headers:{'content-type':'application/json','x-app-code':code||''},body:b?JSON.stringify(b):undefined});if(r.status===401)throw{auth:1};return r};
+const load=async()=>{const r=await api('GET','/api/state');if(!r.ok)throw new Error('Server error '+r.status);const j=await r.json();ver=j.ver;if(j.data){try{Object.assign(S,JSON.parse(j.data))}catch(e){}}render()};
+DB={doc:p=>{const id=p.split('/')[1];return{
+ set:async o=>{if(p==='app/state'){const r=await api('PUT','/api/state',{ver,data:o.d});if(r.status===409){await load();throw new Error('Someone else saved first, so your last change was not kept. Please repeat it.')}if(!r.ok)throw new Error('Save failed');ver=(await r.json()).ver}else{const r=await api('PUT','/api/img/'+id,{d:o.d});if(!r.ok)throw new Error('Image save failed')}},
+ get:async()=>{const r=await api('GET','/api/img/'+id);if(!r.ok)return{exists:false};const j=await r.json();return{exists:true,data:()=>({d:j.d})}}}}};
+(async()=>{const box=document.getElementById('app');
+ for(;;){if(!code){code=(window.prompt('Enter the team access code:')||'').trim();if(!code){box.innerHTML='<div class="card"><b>Access code needed.</b><p class="meta">Reload the page and enter the code your team uses.</p></div>';return}sessionStorage.setItem('ac',code)}
+  try{await load();break}catch(e){if(e.auth){code=null;sessionStorage.removeItem('ac');toast('Wrong access code')}else{box.innerHTML='<div class="card"><b>Could not reach the server.</b><p class="meta">It may be waking up. Wait a minute and reload.</p></div>';return}}}
+ let n=localStorage.getItem('alpha_name');if(!n){n=(window.prompt('Your name (shown on your expenses):')||'Staff').trim()||'Staff';localStorage.setItem('alpha_name',n)}ME=n;render();
+ setInterval(()=>{const t=document.activeElement&&document.activeElement.tagName;if(S.view==='new'||t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;load().catch(()=>{})},20000)})();
+})();
+
+function ladder(x){const R=(ok,t,sub,b)=>'<div style="padding:9px 0;border-bottom:1px solid var(--line)"><b>'+(ok?'✓ ':'○ ')+t+'</b><div class="meta">'+sub+'</div>'+(b||'')+'</div>';
+return '<div class="card"><h3 style="font-size:16px;margin-bottom:2px">Evidence ladder · '+level(x)+'/6</h3>'
++R(1,'Level 1 · Declared','Claimed by '+esc(x.emp)+' with a signed declaration')
++R(x.photo,'Level 2 · Document',x.photo?'Receipt or photo attached':'No receipt attached')
++R(x.ext&&x.ext.match,'Level 3 · AI reads the receipt',x.ext?'Receipt shows '+N(x.ext.amt)+(x.ext.sup?' from '+esc(x.ext.sup):'')+(x.ext.match?'. Matches the claim.':'. Does NOT match the claim.'):'Not read yet',!x.ext&&x.img===true?'<button class="btn sm ghost" style="margin-top:6px" onclick="aiRead('+x.id+')">Read receipt with AI</button>':'')
++R(x.gps,'Level 4 · Time and place',x.gps?'Submitted '+fmt(x.t)+' at '+esc(x.loc):'No GPS location was captured')
++R(x.cp,'Level 5 · Recipient confirmed',x.cp?esc(x.cp.by)+' confirmed receiving '+N(total(x))+' by '+esc(x.cp.method):(x.cpd?'Vendor disputes this payment':x.cpr?'Waiting for '+esc(x.to)+' to confirm in the Vendor tab. Code '+x.cpr:'Not requested'),x.cp?'':(x.cpr?'<div class="row" style="margin-top:6px"><input type="text" id="cpn" placeholder="Who confirmed?"><select id="cpm"><option>Link</option><option>QR code</option><option>Phone call</option><option>Account</option></select></div><button class="btn sm ok" style="margin-top:6px" onclick="cpOk('+x.id+')">Mark as confirmed</button>':'<button class="btn sm ghost" style="margin-top:6px" onclick="cpReq('+x.id+')">Request confirmation</button>'))
++R(x.bank,'Level 6 · Payment verified',x.bank?'Matched to bank record '+esc(x.bank):'Not matched. Paste a bank statement in the Ledger tab.')
++'<p class="hint">Recipient confirmation is simulated here. A live version would send the recipient a real link.</p></div>'}
+function cpReq(id){const x=S.items.find(i=>i.id===id);x.cpr='CF-'+Math.floor(1000+Math.random()*9000);ev(x,x.emp,'Requested confirmation from '+x.to+' ('+x.cpr+')');save();render()}
+function cpOk(id){const x=S.items.find(i=>i.id===id),n=document.getElementById('cpn').value.trim()||x.to,m=document.getElementById('cpm').value;x.cp={by:n,method:m,t:Date.now()};ev(x,n,'Confirmed receiving '+N(total(x))+' by '+m);save();toast('Recipient confirmation recorded');render()}
+function d2b(u){const h=u.split(','),m=h[0].match(/:(.*?);/)[1],s=atob(h[1]),a=new Uint8Array(s.length);for(let i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return new Blob([a],{type:m})}
+async function aiRead(id){const x=S.items.find(i=>i.id===id);try{const d=await DB.doc('img/'+id).get();if(!d.exists)return toast('No receipt image found');
+const code=sessionStorage.getItem('ac');toast('Reading receipt…');const r=await fetch('/api/read-receipt',{method:'POST',headers:{'content-type':'application/json','x-app-code':code},body:JSON.stringify({image:d.data().d})});
+if(!r.ok)return toast(r.status===500?'AI is not set up on the server (needs ANTHROPIC_API_KEY)':'The AI service returned an error ('+r.status+')');
+const j=await r.json(),a=+j.amount||0;x.ext={amt:a,sup:j.supplier||'',date:j.date||'',match:a>0&&Math.abs(a-total(x))<1};ev(x,'AI','Read receipt: '+(a?N(a):'amount unclear')+(j.supplier?' from '+j.supplier:'')+(x.ext.match?' (matches claim)':' (claim is '+N(total(x))+')'));save();render()}catch(e){toast('Could not read the receipt: '+(e.message||'error'))}}
+function bankCard(){return '<div class="card"><h3 style="margin-bottom:4px">Bank reconciliation (Level 6)</h3><p class="hint" style="margin:0 0 8px">Paste bank lines as date, amount, description, one per line. Use plain numbers without commas. Example: 2026-10-16, 12500, TRANSFER MUSA TRANSPORT</p><textarea id="bk" rows="4" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:14px ui-monospace,monospace"></textarea><button class="btn" style="margin-top:8px" onclick="recon()">Match to expenses</button><div id="bkr"></div></div>'}
+function recon(){const ls=document.getElementById('bk').value.split('\n').map(l=>l.trim()).filter(Boolean);let m=0;const u=[];
+ls.forEach(l=>{const p=l.split(','),t=Date.parse((p[0]||'').trim()),a=+String(p[1]||'').replace(/[^0-9.]/g,''),d=p.slice(2).join(',').trim(),x=S.items.find(i=>!i.bank&&i.status!=='rejected'&&total(i)===a&&(isNaN(t)||Math.abs(i.t-t)<=3*864e5));if(x){x.bank='BANK-'+hsh(l).slice(0,6).toUpperCase();ev(x,'System','Matched bank record: '+N(a)+' '+d);m++}else u.push(l)});
+if(m)save();document.getElementById('bkr').innerHTML='<p style="margin:10px 0 0"><b>'+m+' matched.</b> '+u.length+' not matched.</p>'+u.map(l=>'<div class="meta">'+esc(l)+'</div>').join('')}
+function evPanel(){const a=S.items.filter(x=>x.status!=='rejected'),t=a.reduce((s,x)=>s+total(x),0)||1,by=[0,0,0,0,0,0,0];a.forEach(x=>by[level(x)]+=total(x));const strong=by[4]+by[5]+by[6];
+return '<div class="card"><h3 style="font-size:16px;margin-bottom:4px">Evidence strength</h3><div class="meta" style="margin-bottom:8px"><b style="color:var(--ink)">'+Math.round(strong/t*100)+'%</b> of spend has Level 4 or higher. <b style="color:var(--bad)">'+N(by[1])+'</b> is declared only.</div>'+[1,2,3,4,5,6].map(i=>'<div class="item meta"><span>Level '+i+'</span><b style="color:var(--ink)">'+N(by[i])+'</b></div><div style="height:6px;border-radius:3px;background:var(--line);margin:3px 0 8px"><i style="display:block;height:100%;width:'+Math.round(by[i]/t*100)+'%;background:var(--brand);border-radius:3px"></i></div>').join('')+'</div>'}
+
+function rng(){const g=S.rg||'d',n=Date.now(),td=new Date().toDateString();return S.items.filter(x=>g==='a'||(g==='d'?new Date(x.t).toDateString()===td:n-x.t<7*864e5))}
+function catPanel(it){const by={};it.filter(x=>x.status!=='rejected').forEach(x=>by[x.cat]=(by[x.cat]||0)+total(x));const k=Object.keys(by).sort((a,b)=>by[b]-by[a]),t=k.reduce((s,c)=>s+by[c],0);
+return '<div class="seg">'+[['d','Today'],['w','7 days'],['a','All']].map(r=>'<button class="'+((S.rg||'d')===r[0]?'on':'')+'" onclick="S.rg=\''+r[0]+'\';S.filter=\'all\';render()">'+r[1]+'</button>').join('')+'</div><div class="card"><h3 style="font-size:16px;margin-bottom:6px">Expenses by category</h3>'+(k.length?'<table class="tbl mono"><tr><th>Category</th><th class="n">Amount</th></tr>'+k.map(c=>'<tr><td>'+esc(c)+'</td><td class="n">'+N(by[c])+'</td></tr>').join('')+'<tr><td><b>Total</b></td><td class="n"><b>'+N(t)+'</b></td></tr></table>':'<div class="meta">No expenses in this period.</div>')+'</div>'}
+function vendor(){const op=x=>x.cpr&&!x.cp&&!x.cpd&&x.status!=='rejected',vs=[...new Set(S.items.filter(op).map(x=>x.to))];if(!vs.includes(S.vn))S.vn=vs[0];
+const my=S.items.filter(x=>x.to===S.vn&&op(x)),done=S.items.filter(x=>x.to===S.vn&&x.cp).length;
+return '<div class="card"><h3 style="margin-bottom:4px">Vendor confirmation</h3><p class="hint" style="margin:0 0 8px">This is what a supplier sees. When an employee records a payment, the supplier is asked to confirm they received it. In a live version this arrives by link or SMS.</p>'+(vs.length?'<label style="margin-top:0">You are</label><select onchange="S.vn=this.value;render()">'+vs.map(v=>'<option'+(v===S.vn?' selected':'')+'>'+esc(v)+'</option>').join('')+'</select>':'')+'</div>'
++(my.map(x=>'<div class="card"><div class="item"><div><b>'+esc(x.emp)+' says they paid you</b><div class="meta">'+esc(x.purpose)+' · '+fmt(x.t)+' · '+esc(x.src)+'</div></div><div class="a">'+N(total(x))+'</div></div><div class="meta" style="margin:8px 0">'+x.lines.map(l=>esc(l.d)+' x'+l.q).join(', ')+'</div><b>Did you receive '+N(total(x))+'?</b><div class="acts"><button class="btn sm ok" onclick="vOk('+x.id+')">Yes, received</button><button class="btn sm bad" onclick="vNo('+x.id+')">Not received</button></div><div class="row" style="margin-top:8px"><input type="number" id="vd'+x.id+'" inputmode="decimal" placeholder="Different amount received"><button class="btn sm ghost" onclick="vDiff('+x.id+')">Report amount</button></div></div>').join('')||'<div class="empty">No payments are waiting for confirmation.</div>')
++(done?'<p class="hint">'+done+' payment(s) already confirmed by '+esc(S.vn||'this vendor')+'.</p>':'')}
+function vOk(id){const x=S.items.find(i=>i.id===id);x.cp={by:x.to,method:'Vendor portal',t:Date.now()};ev(x,x.to,'Confirmed receiving '+N(total(x))+' (vendor portal)');save();toast('Thank you. Payment confirmed.');render()}
+function vNo(id){const x=S.items.find(i=>i.id===id);x.cpd={amt:0,t:Date.now()};ev(x,x.to,'Says it did not receive this payment');save();toast('Reported to the business owner');render()}
+function vDiff(id){const x=S.items.find(i=>i.id===id),a=+document.getElementById('vd'+id).value;if(!a||a<=0)return toast('Enter the amount you received');if(a===total(x))return vOk(id);x.cpd={amt:a,t:Date.now()};ev(x,x.to,'Says it received '+N(a)+', claim is '+N(total(x)));save();toast('Difference reported to the business owner');render()}
+
+function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim()}
+function rk(x){return x.rf&&x.rt?[norm(x.rf),norm(x.rt)].sort().join('|'):''}
+function med(a){const s=a.slice().sort((p,q)=>p-q),m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2}
+function hist(x){const o=S.items.filter(y=>y.id!==x.id&&y.status!=='rejected'),r=rk(x),rp=r?o.filter(y=>rk(y)===r):[],lp=x.lines.map(l=>({l,k:norm(l.d),peers:[]}));
+ lp.forEach(z=>{if(z.k&&z.k!=='item')o.forEach(y=>y.lines.forEach(m=>{if(norm(m.d)===z.k)z.peers.push({y,p:m.p})}))});return{rp,lp}}
+function bm(x){const f=[],h=hist(x),t=total(x),big=(v,m)=>v>=m*1.5&&v-m>=500;
+ if(h.rp.length){const m=med(h.rp.map(total));if(big(t,m))f.push(x.rf+' to '+x.rt+': claimed '+N(t)+', but '+h.rp.length+' other claim'+(h.rp.length>1?'s':'')+' on this route '+(h.rp.length>1?'typically show ':'shows ')+N(Math.round(m)))}
+ if(!f.length)h.lp.forEach(z=>{const ps=z.peers.filter(q=>!h.rp.includes(q.y));if(ps.length){const m=med(ps.map(q=>q.p));if(big(z.l.p,m))f.push('"'+z.l.d+'" at '+N(z.l.p)+' each, but earlier claims show '+N(Math.round(m))+' ('+ps.length+' earlier)')}});
+ return f}
+function hcard(x){const h=hist(x),rows=[];h.rp.forEach(y=>rows.push([y.emp,y.rf+' to '+y.rt,total(y),y.t,y.status]));
+ h.lp.forEach(z=>z.peers.forEach(q=>{if(!h.rp.includes(q.y))rows.push([q.y.emp,z.l.d+' (each)',q.p,q.y.t,q.y.status])}));
+ if(!rows.length)return '';return '<div class="card"><h3 style="font-size:16px;margin-bottom:6px">Compared with past entries</h3><table class="tbl mono"><tr><th>Who</th><th>For</th><th class="n">Amount</th></tr>'+rows.slice(0,8).map(r=>'<tr><td>'+esc(r[0])+'<div class="meta">'+fmt(r[3])+' · '+r[4]+'</div></td><td>'+esc(r[1])+'</td><td class="n">'+N(r[2])+'</td></tr>').join('')+'</table></div>'}
+render();
+</script></body></html>
